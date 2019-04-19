@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# coding: utf-8
 #  Copyright © 2014-2016 David Caldwell
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -35,7 +36,7 @@ def build_emacs(src_dir, brew_dir, out_name, options={})
     parallel_flags = options[:parallel] ? ["-j", options[:parallel]] : []
     # This should be the default but isn't :-( http://debbugs.gnu.org/cgi/bugreport.cgi?bug=19850
     configure_flags += ['--enable-locallisppath=/Library/Application Support/Emacs/${version}/site-lisp:/Library/Application Support/Emacs/site-lisp']
-    configure_flags += %W"--with-modules"
+    configure_flags += %W"--with-modules --without-imagemagick"
 
     ENV['CC']="#{options[:cc]} #{min_os_flag} #{options[:extra_cc_options]}"
     Vsh.system_trace(["CC=#{ENV['CC']}"])
@@ -122,6 +123,7 @@ Vsh.rm_rf src_dir
 Vsh.mkdir_p src_dir
 FileUtils.cd(src_dir) do
   Vsh.system(*%W'tar xf #{"../"+source_tar} --strip-components=1')
+  system("patch -p1 < ../inline-patch/emacs-25.2-inline.patch")
 end
 
 os_maj_version = `sw_vers -productVersion`.chomp.sub(/^(\d+\.\d+)\.\d+/,'\1')
